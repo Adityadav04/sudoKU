@@ -3,7 +3,7 @@
 A fun, browser-based Sudoku game with user authentication, difficulty levels, hints, and a leaderboard system.
 
 <p align="center">
-  <img src="./images/img1a.png" alt="SudoKU Game" width="800" height="400">
+  <img src="img1a.png" alt="SudoKU Game" width="800" height="400">
 </p>
 
 
