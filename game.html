@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Game</title>
+    <style>
+        body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    max-width: 650px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: center;
+    background-color: #ffecdb;
+    color: #444;
+}
+h1 {
+    color: #ff6b6b;
+    text-shadow: 3px 3px 0px #ffd166;
+    font-size: 42px;
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+    transform: rotate(-2deg);
+}
+.controls {
+    margin: 25px 0;
+    background-color: #ffd166;
+    padding: 15px;
+    border-radius: 20px;
+    box-shadow: 0 5px 0 #e29e19;
+}
+button {
+    background-color: #06d6a0;
+    border: none;
+    color: white;
+    padding: 12px 18px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 6px 3px;
+    cursor: pointer;
+    border-radius: 50px;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #059669;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    transition: all 0.2s;
+}
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 0 #059669;
+}
+button:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #059669;
+}
+button:disabled {
+    background-color: #b8b8b8;
+    box-shadow: 0 4px 0 #8a8a8a;
+    cursor: not-allowed;
+}
+select {
+    padding: 10px 15px;
+    font-size: 16px;
+    border-radius: 50px;
+    border: 3px solid #06d6a0;
+    background-color: white;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    margin-right: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+.sudoku-board {
+    margin: 25px auto;
+    border: 4px solid #118ab2;
+    border-radius: 10px;
+    width: 470px;
+    height: 470px;
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    grid-gap: 0;
+    overflow: hidden;
+    box-shadow: 0 8px 0 #0f7a9d, 0 0 20px rgba(0,0,0,0.1);
+}
+.cell {
+    width: 50px;
+    height: 50px;
+    border: 1px solid #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: bold;
+    background-color: #fff;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.cell:hover:not(.fixed) {
+    background-color: #e6f7ff;
+    transform: scale(1.05);
+    z-index: 1;
+}
+.cell.fixed {
+    background-color: #eaf4fc;
+    cursor: not-allowed;
+    color: #118ab2;
+}
+.cell.selected {
+    background-color: #c7f9ff;
+    box-shadow: inset 0 0 0 3px #06d6a0;
+}
+.cell.error {
+    color: #ff595e;
+    animation: wobble 0.5s ease-in-out;
+}
+.cell:nth-child(3n) {
+    border-right: 2px solid #118ab2;
+}
+.cell:nth-child(9n) {
+    border-right: none;
+}
+.cell:nth-child(n+19):nth-child(-n+27),
+.cell:nth-child(n+46):nth-child(-n+54) {
+    border-bottom: 2px solid #118ab2;
+}
+.status {
+    margin-top: 20px;
+    font-weight: bold;
+    color: #ff6b6b;
+    font-size: 20px;
+    padding: 15px;
+    background-color: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 0 #ffb4b4;
+    max-width: 450px;
+    margin: 20px auto;
+}
+.number-pad {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin: 25px auto;
+    max-width: 350px;
+}
+.number-btn {
+    padding: 15px;
+    font-size: 22px;
+    cursor: pointer;
+    border-radius: 15px;
+    background-color: #118ab2;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 0 #0f7a9d;
+    font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+    transition: all 0.2s;
+}
+.number-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 7px 0 #0f7a9d;
+}
+.number-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #0f7a9d;
+}
+.info {
+    margin: 20px 0;
+    color: #444;
+    background-color: #73d2de;
+    padding: 12px;
+    border-radius: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 4px 0 #5fb8c2;
+    display: inline-block;
+}
+@keyframes wobble {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+.new-game-anim {
+    animation: pulse 0.5s infinite;
+}
+  .user-info {
+    margin-top: 15px;
+    background-color: #ffd166;
+    padding: 10px 20px;
+    border-radius: 15px;
+    font-weight: bold;
+    display: inline-block;
+}
+.nav-links {
+    margin-top: 20px;
+}
+.nav-links a {
+    display: inline-block;
+    margin: 0 10px;
+    color: #ff6b6b;
+    text-decoration: none;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+.nav-links a:hover {
+    color: #ff5252;
+    transform: scale(1.05);
+}
+    </style>
+</head>
+<body>
+    <h1>sudoKU-Sudoku Game</h1>
+    <div id="user-status" class="user-info" style="display: none;">
+    Logged in as: <span id="current-username"></span>
+    <button id="logout-btn" style="padding: 5px 12px; margin-left: 10px;">Logout</button>
+    </div>
+    <div class="controls">
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="medium">Medium</option>
+            <option value="hard">Hard</option>
+        </select>
+        <button id="newGame">New Game</button>
+        <button id="hint">Hint (0/5)</button>
+        <button id="check">Check Solution</button>
+    </div>
+    <div class="info">
+        <p>Moves: <span id="moves">0</span> | Hints Used: <span id="hintsUsed">0</span>/5</p>
+    </div>
+    <div class="sudoku-board" id="board"></div>
+    <div class="number-pad">
+        <button class="number-btn" data-value="1">1</button>
+        <button class="number-btn" data-value="2">2</button>
+        <button class="number-btn" data-value="3">3</button>
+        <button class="number-btn" data-value="4">4</button>
+        <button class="number-btn" data-value="5">5</button>
+        <button class="number-btn" data-value="6">6</button>
+        <button class="number-btn" data-value="7">7</button>
+        <button class="number-btn" data-value="8">8</button>
+        <button class="number-btn" data-value="9">9</button>
+        <button class="number-btn" data-value="0">Clear</button>
+    </div>
+    <div class="status" id="status"></div>
+    <div class="nav-links">
+      <a href="index.html">Login/Register</a>
+      <a href="leaderboard.html">View Leaderboard</a>
+    </div>
+    <script>
+       // Initialize default scores function should be outside the class
+function initializeDefaultScores() {
+    // Check if we've already initialized default scores
+    if (localStorage.getItem('sudokuDefaultScoresAdded')) return;
+    
+    // Create some dummy users and scores if they don't exist
+    const users = JSON.parse(localStorage.getItem('sudokuUsers') || '[]');
+    
+    // Check if we need to add dummy data (only if less than 3 scores total)
+    let totalScores = 0;
+    users.forEach(user => {
+        if (user.scores) totalScores += user.scores.length;
+    });
+    
+    if (totalScores >= 3) {
+        localStorage.setItem('sudokuDefaultScoresAdded', 'true');
+        return;
+    }
+
+    // Sample user data
+    const dummyUsers = [
+        {
+            id: 'dummy1',
+            username: 'SudokuMaster',
+            email: 'master@example.com',
+            password: 'password123',
+            joinedDate: '2024-12-10T10:00:00.000Z',
+            scores: [
+                {
+                    difficulty: 'hard',
+                    moves: 42,
+                    hintsUsed: 1,
+                    date: '2025-04-15T14:30:00.000Z'
+                },
+                {
+                    difficulty: 'medium',
+                    moves: 36,
+                    hintsUsed: 0,
+                    date: '2025-04-18T09:15:00.000Z'
+                }
+            ]
+        },
+        {
+            id: 'dummy2',
+            username: 'PuzzlePro',
+            email: 'pro@example.com',
+            password: 'password123',
+            joinedDate: '2025-01-05T15:20:00.000Z',
+            scores: [
+                {
+                    difficulty: 'hard',
+                    moves: 51,
+                    hintsUsed: 2,
+                    date: '2025-04-10T16:45:00.000Z'
+                }
+            ]
+        },
+        {
+            id: 'dummy3',
+            username: 'NumberNinja',
+            email: 'ninja@example.com',
+            password: 'password123',
+            joinedDate: '2025-03-22T08:40:00.000Z',
+            scores: [
+                {
+                    difficulty: 'easy',
+                    moves: 29,
+                    hintsUsed: 0,
+                    date: '2025-04-20T11:20:00.000Z'
+                },
+                {
+                    difficulty: 'medium',
+                    moves: 45,
+                    hintsUsed: 1,
+                    date: '2025-04-21T13:10:00.000Z'
+                }
+            ]
+        }
+    ];
+    
+    // Add dummy users to existing users array
+    for (const dummyUser of dummyUsers) {
+        // Check if this dummy user already exists
+        if (!users.some(u => u.username === dummyUser.username)) {
+            users.push(dummyUser);
+        }
+    }
+    
+    // Save updated users array
+    localStorage.setItem('sudokuUsers', JSON.stringify(users));
+    localStorage.setItem('sudokuDefaultScoresAdded', 'true');
+}
+
+class SudokuGame {
+    constructor() {
+        this.board = Array(9).fill().map(() => Array(9).fill(0));
+        this.solution = Array(9).fill().map(() => Array(9).fill(0));
+        this.fixedCells = Array(9).fill().map(() => Array(9).fill(false));
+        this.selectedCell = null;
+        this.moves = 0;
+        this.hintsUsed = 0;
+        this.gameOver = false;
+        this.maxHints = 5;
+        
+        // DOM elements
+        this.boardElement = document.getElementById('board');
+        this.difficultySelect = document.getElementById('difficulty');
+        this.newGameButton = document.getElementById('newGame');
+        this.hintButton = document.getElementById('hint');
+        this.checkButton = document.getElementById('check');
+        this.statusElement = document.getElementById('status');
+        this.movesElement = document.getElementById('moves');
+        this.hintsUsedElement = document.getElementById('hintsUsed');
+        
+        // Create the initial board
+        this.createBoardUI();
+        
+        // Setup event listeners
+        this.setupEventListeners();
+        
+        // Start a new game
+        this.startNewGame();
+    }
+    
+    createBoardUI() {
+        this.boardElement.innerHTML = '';
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                const cellElement = document.createElement('div');
+                cellElement.className = 'cell';
+                cellElement.dataset.row = row;
+                cellElement.dataset.col = col;
+                this.boardElement.appendChild(cellElement);
+            }
+        }
+    }
+    
+    setupEventListeners() {
+        // New game button
+        this.newGameButton.addEventListener('click', () => {
+            this.startNewGame();
+        });
+        
+        // Hint button
+        this.hintButton.addEventListener('click', () => {
+            this.giveHint();
+        });
+        
+        // Check button
+        this.checkButton.addEventListener('click', () => {
+            this.checkSolution();
+        });
+        
+        // Cell selection
+        this.boardElement.addEventListener('click', (event) => {
+            if (this.gameOver) return;
+            
+            const cell = event.target;
+            if (cell.classList.contains('cell')) {
+                const row = parseInt(cell.dataset.row);
+                const col = parseInt(cell.dataset.col);
+                
+                // Can't select fixed cells
+                if (this.fixedCells[row][col]) return;
+                
+                // Deselect previously selected cell
+                if (this.selectedCell) {
+                    const prevCell = this.getCellElement(this.selectedCell.row, this.selectedCell.col);
+                    if (prevCell) prevCell.classList.remove('selected');
+                }
+                
+                // Select new cell
+                this.selectedCell = { row, col };
+                cell.classList.add('selected');
+            }
+        });
+        
+        // Number pad input
+        document.querySelectorAll('.number-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                if (!this.selectedCell || this.gameOver) return;
+                
+                const value = parseInt(button.dataset.value);
+                if (isNaN(value)) return;
+                
+                // Clear cell if value is 0
+                if (value === 0) {
+                    this.board[this.selectedCell.row][this.selectedCell.col] = 0;
+                    this.getCellElement(this.selectedCell.row, this.selectedCell.col).textContent = '';
+                    this.moves++;
+                    this.movesElement.textContent = this.moves;
+                    return;
+                }
+                
+                // Check if the move is valid according to Sudoku rules
+                if (!this.isValidMove(this.board, this.selectedCell.row, this.selectedCell.col, value)) {
+                    const cell = this.getCellElement(this.selectedCell.row, this.selectedCell.col);
+                    cell.classList.add('error');
+                    setTimeout(() => {
+                        cell.classList.remove('error');
+                    }, 500);
+                    return;
+                }
+                
+                // Update cell value
+                this.board[this.selectedCell.row][this.selectedCell.col] = value;
+                this.getCellElement(this.selectedCell.row, this.selectedCell.col).textContent = value;
+                
+                // Update moves count
+                this.moves++;
+                this.movesElement.textContent = this.moves;
+                
+                // Check if game is complete
+                if (this.isBoardFilled() && this.isValidSolution()) {
+                    this.gameOver = true;
+                    this.statusElement.textContent = "Congratulations! You've solved the puzzle in " + this.moves + " moves.";
+                    
+                    // Add win-specific styling for better feedback
+                    this.boardElement.classList.add('win');
+                    
+                    if (this.hintsUsed > this.maxHints) {
+                        this.statusElement.textContent += " (Note: More than 5 hints were used)";
+                    }
+                    
+                    // Save score regardless of hint count
+                    this.saveScore();
+                }
+            });
+        });
+        
+        // Keyboard input
+        document.addEventListener('keydown', (event) => {
+            if (!this.selectedCell || this.gameOver) return;
+            
+            if (event.key >= '1' && event.key <= '9') {
+                const value = parseInt(event.key);
+                
+                // Check if the move is valid according to Sudoku rules
+                if (!this.isValidMove(this.board, this.selectedCell.row, this.selectedCell.col, value)) {
+                    const cell = this.getCellElement(this.selectedCell.row, this.selectedCell.col);
+                    cell.classList.add('error');
+                    setTimeout(() => {
+                        cell.classList.remove('error');
+                    }, 500);
+                    return;
+                }
+                
+                this.board[this.selectedCell.row][this.selectedCell.col] = value;
+                this.getCellElement(this.selectedCell.row, this.selectedCell.col).textContent = value;
+                this.moves++;
+                this.movesElement.textContent = this.moves;
+                
+                // Check if game is complete
+                if (this.isBoardFilled() && this.isValidSolution()) {
+                    this.gameOver = true;
+                    this.statusElement.textContent = "Congratulations! You've solved the puzzle in " + this.moves + " moves.";
+                    
+                    // Add win-specific styling
+                    this.boardElement.classList.add('win');
+                    
+                    if (this.hintsUsed > this.maxHints) {
+                        this.statusElement.textContent += " (Note: More than 5 hints were used)";
+                    }
+                    
+                    // Save score regardless of hint count
+                    this.saveScore();
+                }
+            } else if (event.key === 'Backspace' || event.key === 'Delete' || event.key === '0') {
+                this.board[this.selectedCell.row][this.selectedCell.col] = 0;
+                this.getCellElement(this.selectedCell.row, this.selectedCell.col).textContent = '';
+                this.moves++;
+                this.movesElement.textContent = this.moves;
+            }
+        });
+    }
+    
+    getCellElement(row, col) {
+        return this.boardElement.querySelector(`[data-row="${row}"][data-col="${col}"]`);
+    }
+    
+    startNewGame() {
+        this.gameOver = false;
+        this.moves = 0;
+        this.hintsUsed = 0;
+        this.movesElement.textContent = '0';
+        this.hintsUsedElement.textContent = '0';
+        this.hintButton.textContent = `Hint (0/${this.maxHints})`;
+        this.statusElement.textContent = '';
+        
+        // Remove win styling if present
+        this.boardElement.classList.remove('win');
+        
+        // Generate a new puzzle
+        this.generateSudoku();
+        
+        // Create a puzzle based on difficulty
+        this.createPuzzle(this.difficultySelect.value);
+        
+        // Clear selected cell
+        if (this.selectedCell) {
+            const prevCell = this.getCellElement(this.selectedCell.row, this.selectedCell.col);
+            if (prevCell) prevCell.classList.remove('selected');
+        }
+        this.selectedCell = null;
+        
+        // Update the UI
+        this.updateBoardUI();
+        
+        // Enable hint button
+        this.hintButton.disabled = false;
+    }
+    
+    generateSudoku() {
+        // Start with an empty board
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                this.solution[row][col] = 0;
+            }
+        }
+        
+        // Solve it to create a full valid board
+        this.solveSudoku(this.solution);
+        
+        // Copy solution to current board
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                this.board[row][col] = this.solution[row][col];
+            }
+        }
+    }
+    
+    solveSudoku(board) {
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                if (board[row][col] === 0) {
+                    // Shuffle array of numbers 1-9
+                    const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+                    this.shuffleArray(nums);
+                    
+                    for (let i = 0; i < nums.length; i++) {
+                        const num = nums[i];
+                        if (this.isValidMove(board, row, col, num)) {
+                            board[row][col] = num;
+                            
+                            if (this.solveSudoku(board)) {
+                                return true;
+                            }
+                            
+                            board[row][col] = 0;
+                        }
+                    }
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    isValidMove(board, row, col, num) {
+        // Check row
+        for (let i = 0; i < 9; i++) {
+            if (board[row][i] === num) {
+                return false;
+            }
+        }
+        
+        // Check column
+        for (let i = 0; i < 9; i++) {
+            if (board[i][col] === num) {
+                return false;
+            }
+        }
+        
+        // Check 3x3 box
+        const boxRow = Math.floor(row / 3) * 3;
+        const boxCol = Math.floor(col / 3) * 3;
+        for (let i = 0; i < 3; i++) {
+            for (let j = 0; j < 3; j++) {
+                if (board[boxRow + i][boxCol + j] === num) {
+                    return false;
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+    
+    createPuzzle(difficulty) {
+        let cellsToRemove;
+        switch (difficulty) {
+            case 'easy':
+                cellsToRemove = 40; // Reveals about 41 cells
+                break;
+            case 'medium':
+                cellsToRemove = 50; // Reveals about 31 cells
+                break;
+            case 'hard':
+                cellsToRemove = 60; // Reveals about 21 cells
+                break;
+            default:
+                cellsToRemove = 45;
+        }
+        
+        // Reset fixed cells
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                this.fixedCells[row][col] = true;
+            }
+        }
+        
+        // Create a list of all cells
+        const cells = [];
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                cells.push({ row, col });
+            }
+        }
+        
+        // Shuffle the cells
+        this.shuffleArray(cells);
+        
+        // Remove cells based on difficulty
+        for (let i = 0; i < cellsToRemove; i++) {
+            if (i < cells.length) {
+                const { row, col } = cells[i];
+                this.board[row][col] = 0;
+                this.fixedCells[row][col] = false;
+            }
+        }
+    }
+    
+    updateBoardUI() {
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                const cell = this.getCellElement(row, col);
+                if (cell) {
+                    cell.textContent = this.board[row][col] === 0 ? '' : this.board[row][col];
+                    cell.classList.remove('fixed', 'error', 'selected');
+                    
+                    if (this.fixedCells[row][col]) {
+                        cell.classList.add('fixed');
+                    }
+                }
+            }
+        }
+    }
+    
+    giveHint() {
+        if (this.gameOver) return;
+        
+        // Find empty cells or cells with wrong answers
+        const emptyCells = [];
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                if (!this.fixedCells[row][col] && 
+                    (this.board[row][col] === 0 || this.board[row][col] !== this.solution[row][col])) {
+                    emptyCells.push({ row, col });
+                }
+            }
+        }
+        
+        if (emptyCells.length === 0) {
+            this.statusElement.textContent = "No more hints needed. Your solution is correct!";
+            return;
+        }
+        
+        // Randomly select a cell to hint
+        const randomIndex = Math.floor(Math.random() * emptyCells.length);
+        const { row, col } = emptyCells[randomIndex];
+        
+        // Reveal the correct value
+        this.board[row][col] = this.solution[row][col];
+        this.fixedCells[row][col] = true;
+        
+        // Update UI
+        const cell = this.getCellElement(row, col);
+        cell.textContent = this.solution[row][col];
+        cell.classList.add('fixed');
+        
+        // Increment hint counter
+        this.hintsUsed++;
+        this.hintsUsedElement.textContent = this.hintsUsed;
+        this.hintButton.textContent = `Hint (${this.hintsUsed}/${this.maxHints})`;
+        
+        // Disable hint button if max hints used
+        if (this.hintsUsed >= this.maxHints) {
+            this.statusElement.textContent = "You've used all your 5 hints.";
+        }
+        // Disable hint button if max hints used
+        if (this.hintsUsed >= this.maxHints) {
+            this.statusElement.textContent = "You've used all your 5 hints.";
+            this.hintButton.disabled = true;  // Add this line
+            }
+        // Check if game is complete after hint
+        if (this.isBoardFilled() && this.isValidSolution()) {
+            this.gameOver = true;
+            this.statusElement.textContent = "Puzzle completed in " + this.moves + " moves.";
+            
+            // Add win styling
+            this.boardElement.classList.add('win');
+            
+            if (this.hintsUsed > this.maxHints) {
+                this.statusElement.textContent += " (More than 5 hints were used)";
+            }
+            
+            // Save score regardless of hint count
+            this.saveScore();
+        }
+    }
+    
+    checkSolution() {
+        if (this.gameOver) return;
+        
+        // First check if the board is filled
+        if (!this.isBoardFilled()) {
+            this.statusElement.textContent = "The board is not completely filled yet.";
+            return;
+        }
+        
+        // Check if solution is valid
+        if (this.isValidSolution()) {
+            this.gameOver = true;
+            this.statusElement.textContent = "Congratulations! You've solved the puzzle in " + this.moves + " moves.";
+            
+            // Add win styling
+            this.boardElement.classList.add('win');
+            
+            // Always save score for valid solutions, but note if too many hints were used
+            if (this.hintsUsed > this.maxHints) {
+                this.statusElement.textContent += " (Note: More than 5 hints were used)";
+            }
+            
+            // Save the score regardless of hint count, but the leaderboard can filter if needed
+            this.saveScore();
+            
+        } else {
+            this.statusElement.textContent = "Your solution has errors. Keep trying!";
+            
+            // Highlight errors
+            for (let row = 0; row < 9; row++) {
+                for (let col = 0; col < 9; col++) {
+                    if (this.board[row][col] !== this.solution[row][col]) {
+                        const cell = this.getCellElement(row, col);
+                        if (cell) cell.classList.add('error');
+                    }
+                }
+            }
+            
+            // Remove error highlighting after a delay
+            setTimeout(() => {
+                const errorCells = document.querySelectorAll('.cell.error');
+                errorCells.forEach(cell => {
+                    cell.classList.remove('error');
+                });
+            }, 2000);
+        }
+    }
+    
+    isBoardFilled() {
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                if (this.board[row][col] === 0) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    isValidSolution() {
+        for (let row = 0; row < 9; row++) {
+            for (let col = 0; col < 9; col++) {
+                if (this.board[row][col] !== this.solution[row][col]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    saveScore() {
+        // Check if localStorage is available
+        if (!this.isStorageAvailable('localStorage')) {
+            console.error("localStorage is not available");
+            this.statusElement.textContent += " (Couldn't save score: storage unavailable)";
+            return;
+        }
+        
+        // Get current user
+        const currentUser = JSON.parse(localStorage.getItem('sudokuCurrentUser'));
+        
+        // Only save scores for logged-in users
+        if (!currentUser) {
+            this.statusElement.textContent += " (Login to save your score to the leaderboard)";
+            return;
+        }
+        
+        // Create score object
+        const scoreData = {
+            difficulty: this.difficultySelect.value,
+            moves: this.moves,
+            hintsUsed: this.hintsUsed,
+            date: new Date().toISOString()
+        };
+        
+        // Get all users
+        const users = JSON.parse(localStorage.getItem('sudokuUsers') || '[]');
+        
+        // Find the current user in the users array
+        const userIndex = users.findIndex(user => user.id === currentUser.id);
+        
+        if (userIndex !== -1) {
+            // Add score to user's scores array
+            if (!users[userIndex].scores) {
+                users[userIndex].scores = [];
+            }
+            users[userIndex].scores.push(scoreData);
+            
+            // Save updated users array
+            localStorage.setItem('sudokuUsers', JSON.stringify(users));
+            
+            this.statusElement.textContent += " Score saved to leaderboard!";
+            console.log("Score saved:", scoreData);
+        } else {
+            console.error("Could not find current user in users array");
+        }
+    }
+    
+    // Helper method to check if storage is available
+    isStorageAvailable(type) {
+        try {
+            const storage = window[type];
+            const x = '__storage_test__';
+            storage.setItem(x, x);
+            storage.removeItem(x);
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+}
+
+// Initialize when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    try {
+        // Check for current user
+        const currentUser = JSON.parse(localStorage.getItem('sudokuCurrentUser'));
+        
+        if (currentUser) {
+            // Show user status
+            const userStatus = document.getElementById('user-status');
+            if (userStatus) {
+                userStatus.style.display = 'block';
+                
+                const usernameElement = document.getElementById('current-username');
+                if (usernameElement) {
+                    usernameElement.textContent = currentUser.username;
+                }
+                
+                // Setup logout button
+                const logoutBtn = document.getElementById('logout-btn');
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', () => {
+                        localStorage.removeItem('sudokuCurrentUser');
+                        window.location.href = 'index.html';
+                    });
+                }
+            }
+        }
+        
+        // Initialize default scores before starting the game
+        initializeDefaultScores();
+        
+        // Initialize game after auth check
+        const game = new SudokuGame();
+    } catch (error) {
+        console.error("Error initializing game:", error);
+        document.getElementById('status').textContent = "Error initializing game. Please refresh the page.";
+    }
+});
+
+// Add CSS for win state to document head
+document.addEventListener('DOMContentLoaded', () => {
+    const style = document.createElement('style');
+    style.textContent = `
+        .sudoku-board.win {
+            box-shadow: 0 0 20px rgba(6, 214, 160, 0.7), 0 8px 0 #0f7a9d;
+            animation: celebrate 1s ease-in-out;
+        }
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.03); }
+        }
+    `;
+    document.head.appendChild(style);
+});
+
+</script>
+</body>
+<

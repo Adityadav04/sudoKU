@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SudoKU - Login/Signup</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #ffecdb;
+            color: #444;
+        }
+        h1 {
+            color: #ff6b6b;
+            text-shadow: 3px 3px 0px #ffd166;
+            font-size: 42px;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+            transform: rotate(-2deg);
+        }
+        .auth-container {
+            margin-top: 50px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .auth-form {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: left;
+        }
+        .auth-form h2 {
+            color: #118ab2;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #444;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #ffd166;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #06d6a0;
+            border: none;
+            color: white;
+            padding: 12px 18px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 15px 0 5px;
+            cursor: pointer;
+            border-radius: 50px;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #059669;
+            font-family: inherit;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 0 #059669;
+        }
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #059669;
+        }
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .success {
+            background-color: #c7f9cc;
+            color: #2b9348;
+        }
+        .error {
+            background-color: #ffccd5;
+            color: #d90429;
+        }
+        .guest-play {
+            margin-top: 30px;
+            text-align: center;
+        }
+        .guest-play a {
+            color: #118ab2;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .guest-play a:hover {
+            color: #0f7a9d;
+            text-decoration: underline;
+        }
+        .nav-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .nav-links a, .auth-toggle {
+            display: inline-block;
+            margin: 0 10px;
+            color: #ff6b6b;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .nav-links a:hover, .auth-toggle:hover {
+            color: #ff5252;
+            transform: scale(1.05);
+        }
+        .auth-toggle {
+            margin-top: 15px;
+            font-size: 16px;
+        }
+        /* Hide the signup form by default */
+        #signup-form-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>sudoKU-Sudoku Game</h1>
+    
+    <div class="auth-container">
+        <div id="login-form-container" class="auth-form">
+            <h2>Login</h2>
+            <div id="login-message" class="message" style="display:none;"></div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="login-username">Username</label>
+                    <input type="text" id="login-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="login-password">Password</label>
+                    <input type="password" id="login-password" required>
+                </div>
+                <button type="submit">Login</button>
+            </form>
+            <div class="auth-toggle" id="show-signup">Don't have an account? Sign Up</div>
+        </div>
+        
+        <div id="signup-form-container" class="auth-form">
+            <h2>Sign Up</h2>
+            <div id="signup-message" class="message" style="display:none;"></div>
+            <form id="signup-form">
+                <div class="form-group">
+                    <label for="signup-username">Username</label>
+                    <input type="text" id="signup-username" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-email">Email</label>
+                    <input type="email" id="signup-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-password">Password</label>
+                    <input type="password" id="signup-password" required>
+                </div>
+                <div class="form-group">
+                    <label for="signup-confirm">Confirm Password</label>
+                    <input type="password" id="signup-confirm" required>
+                </div>
+                <button type="submit">Create Account</button>
+            </form>
+            <div class="auth-toggle" id="show-login">Already have an account? Login</div>
+        </div>
+    </div>
+    
+    <div class="guest-play">
+        <p>Don't want to create an account? <a href="game.html">Play as Guest</a></p>
+    </div>
+    
+    <div class="nav-links">
+        <a href="leaderboard.html">View Leaderboard</a>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is already logged in
+            const currentUser = localStorage.getItem('sudokuCurrentUser');
+            if (currentUser) {
+                window.location.href = 'game.html';
+            }
+            
+            // Form toggle functionality
+            document.getElementById('show-signup').addEventListener('click', function() {
+                document.getElementById('login-form-container').style.display = 'none';
+                document.getElementById('signup-form-container').style.display = 'block';
+            });
+            
+            document.getElementById('show-login').addEventListener('click', function() {
+                document.getElementById('signup-form-container').style.display = 'none';
+                document.getElementById('login-form-container').style.display = 'block';
+            });
+            
+            // Login form submission
+            document.getElementById('login-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('login-username').value;
+                const password = document.getElementById('login-password').value;
+                
+                // Get users from local storage
+                const users = JSON.parse(localStorage.getItem('sudokuUsers') || '[]');
+                
+                // Find user
+                const user = users.find(u => u.username === username && u.password === password);
+                
+                const messageDiv = document.getElementById('login-message');
+                
+                if (user) {
+                    // Login successful
+                    messageDiv.textContent = 'Login successful! Redirecting...';
+                    messageDiv.className = 'message success';
+                    messageDiv.style.display = 'block';
+                    
+                    // Store current user
+                    localStorage.setItem('sudokuCurrentUser', JSON.stringify({
+                        id: user.id,
+                        username: user.username,
+                        email: user.email
+                    }));
+                    
+                    // Redirect to game
+                    setTimeout(() => {
+                        window.location.href = 'game.html';
+                    }, 1500);
+                } else {
+                    // Login failed
+                    messageDiv.textContent = 'Invalid username or password';
+                    messageDiv.className = 'message error';
+                    messageDiv.style.display = 'block';
+                }
+            });
+            
+            // Signup form submission
+            document.getElementById('signup-form').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const username = document.getElementById('signup-username').value;
+                const email = document.getElementById('signup-email').value;
+                const password = document.getElementById('signup-password').value;
+                const confirmPassword = document.getElementById('signup-confirm').value;
+                
+                const messageDiv = document.getElementById('signup-message');
+                
+                // Validate password match
+                if (password !== confirmPassword) {
+                    messageDiv.textContent = 'Passwords do not match';
+                    messageDiv.className = 'message error';
+                    messageDiv.style.display = 'block';
+                    return;
+                }
+                
+                // Get existing users
+                const users = JSON.parse(localStorage.getItem('sudokuUsers') || '[]');
+                
+                // Check if username exists
+                if (users.some(u => u.username === username)) {
+                    messageDiv.textContent = 'Username already exists';
+                    messageDiv.className = 'message error';
+                    messageDiv.style.display = 'block';
+                    return;
+                }
+                
+                // Create new user
+                const newUser = {
+                    id: Date.now().toString(),
+                    username,
+                    email,
+                    password,
+                    joinedDate: new Date().toISOString(),
+                    scores: []
+                };
+                
+                // Add to users array
+                users.push(newUser);
+                
+                // Save to local storage
+                localStorage.setItem('sudokuUsers', JSON.stringify(users));
+                
+                // Display success message
+                messageDiv.textContent = 'Account created successfully! You can now login.';
+                messageDiv.className = 'message success';
+                messageDiv.style.display = 'block';
+                
+                // Clear form
+                document.getElementById('signup-form').reset();
+                
+                // Switch back to login form after successful signup (optional)
+                setTimeout(() => {
+                    document.getElementById('signup-form-container').style.display = 'none';
+                    document.getElementById('login-form-container').style.display = 'block';
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

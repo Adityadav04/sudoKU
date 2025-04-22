@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SudoKU - Leaderboard</title>
+    <style>
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            background-color: #ffecdb;
+            color: #444;
+        }
+        h1 {
+            color: #ff6b6b;
+            text-shadow: 3px 3px 0px #ffd166;
+            font-size: 42px;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+            transform: rotate(-2deg);
+        }
+        .leaderboard-container {
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 0 #e0e0e0, 0 0 20px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        select {
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 50px;
+            border: 2px solid #06d6a0;
+            background-color: white;
+            font-family: inherit;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.05);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+        th {
+            background-color: #118ab2;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 14px;
+            letter-spacing: 1px;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .rank {
+            font-weight: bold;
+            text-align: center;
+            width: 50px;
+        }
+        .rank-1 {
+            color: gold;
+        }
+        .rank-2 {
+            color: silver;
+        }
+        .rank-3 {
+            color: #cd7f32; /* bronze */
+        }
+        .username {
+            font-weight: bold;
+        }
+        .nav-links {
+            margin-top: 30px;
+        }
+        .nav-links a {
+            display: inline-block;
+            background-color: #06d6a0;
+            color: white;
+            padding: 12px 20px;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: bold;
+            margin: 0 10px;
+            box-shadow: 0 4px 0 #059669;
+            transition: all 0.2s;
+        }
+        .nav-links a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 0 #059669;
+        }
+        .nav-links a:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #059669;
+        }
+        .no-data {
+            padding: 30px;
+            text-align: center;
+            color: #666;
+            font-style: italic;
+        }
+        .user-info {
+            background-color: #ffd166;
+            padding: 10px 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .user-info span {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>sudoKU Leaderboard</h1>
+    
+    <div id="user-status" class="user-info" style="display: none;">
+        Logged in as: <span id="current-username"></span>
+    </div>
+    
+    <div class="leaderboard-container">
+        <div class="filters">
+            <select id="difficulty-filter">
+                <option value="all">All Difficulties</option>
+                <option value="easy">Easy</option>
+                <option value="medium">Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            
+            <select id="time-filter">
+                <option value="all">All Time</option>
+                <option value="weekly">This Week</option>
+                <option value="monthly">This Month</option>
+            </select>
+        </div>
+        
+        <table id="leaderboard-table">
+            <thead>
+                <tr>
+                    <th class="rank">Rank</th>
+                    <th>Player</th>
+                    <th>Difficulty</th>
+                    <th>Score (Moves)</th>
+                    <th>Hints Used</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody id="leaderboard-body">
+                <!-- Leaderboard data will be inserted here -->
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="nav-links">
+        <a href="index.html">Login/Register</a>
+        <a href="game.html">Play Game</a>
+    </div>
+    
+    <script>
+            
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check if user is logged in
+            const currentUser = JSON.parse(localStorage.getItem('sudokuCurrentUser'));
+            
+            if (currentUser) {
+                document.getElementById('user-status').style.display = 'block';
+                document.getElementById('current-username').textContent = currentUser.username;
+            }
+            
+            // Load leaderboard data
+            loadLeaderboard();
+            
+            // Set up filter change listeners
+            document.getElementById('difficulty-filter').addEventListener('change', loadLeaderboard);
+            document.getElementById('time-filter').addEventListener('change', loadLeaderboard);
+        });
+        
+        function loadLeaderboard() {
+            const difficultyFilter = document.getElementById('difficulty-filter').value;
+            const timeFilter = document.getElementById('time-filter').value;
+            
+            // Get all users and their scores
+            const users = JSON.parse(localStorage.getItem('sudokuUsers') || '[]');
+            
+            // Flatten all scores into a single array with user info
+            let allScores = [];
+            
+            users.forEach(user => {
+                if (user.scores && user.scores.length > 0) {
+                    user.scores.forEach(score => {
+                        allScores.push({
+                            username: user.username,
+                            ...score
+                        });
+                    });
+                }
+            });
+            
+            // Filter by difficulty
+            if (difficultyFilter !== 'all') {
+                allScores = allScores.filter(score => score.difficulty === difficultyFilter);
+            }
+            
+            // Filter by time period
+            if (timeFilter !== 'all') {
+                const now = new Date();
+                let startDate;
+                
+                if (timeFilter === 'weekly') {
+                    startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 7);
+                } else if (timeFilter === 'monthly') {
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
+                }
+                
+                allScores = allScores.filter(score => {
+                    const scoreDate = new Date(score.date);
+                    return scoreDate >= startDate;
+                });
+            }
+            
+            // Sort by score (fewer moves is better)
+            allScores.sort((a, b) => {
+                // First priority: moves count (lower is better)
+                if (a.moves !== b.moves) {
+                    return a.moves - b.moves;
+                }
+                
+                // Second priority: hints used (lower is better)
+                if (a.hintsUsed !== b.hintsUsed) {
+                    return a.hintsUsed - b.hintsUsed;
+                }
+                
+                // Third priority: difficulty (harder is better)
+                const difficultyValue = {
+                    'easy': 1,
+                    'medium': 2,
+                    'hard': 3
+                };
+                
+                if (difficultyValue[a.difficulty] !== difficultyValue[b.difficulty]) {
+                    return difficultyValue[b.difficulty] - difficultyValue[a.difficulty];
+                }
+                
+                // Last priority: date (newer is better)
+                return new Date(b.date) - new Date(a.date);
+            });
+            
+            // Display scores
+            const leaderboardBody = document.getElementById('leaderboard-body');
+            leaderboardBody.innerHTML = '';
+            
+            if (allScores.length === 0) {
+                leaderboardBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="no-data">No scores available for the selected filters</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            allScores.slice(0, 20).forEach((score, index) => {
+                const row = document.createElement('tr');
+                
+                // Format date
+                const scoreDate = new Date(score.date);
+                const formattedDate = `${scoreDate.toLocaleDateString()} ${scoreDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}`;
+                
+                row.innerHTML = `
+                    <td class="rank ${index < 3 ? 'rank-' + (index + 1) : ''}">${index + 1}</td>
+                    <td class="username">${score.username}</td>
+                    <td>${score.difficulty.charAt(0).toUpperCase() + score.difficulty.slice(1)}</td>
+                    <td>${score.moves}</td>
+                    <td>${score.hintsUsed}</td>
+                    <td>${formattedDate}</td>
+                `;
+                
+                leaderboardBody.appendChild(row);
+            });
+            
+        }
+    </script>
+</body>
+</html>
